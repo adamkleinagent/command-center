@@ -93,9 +93,6 @@ export function TaskList({
                     <span className="text-[10px] font-medium text-zinc-600">
                       {new Date(task.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                     </span>
-                    {task.priority === 'high' && (
-                      <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>
-                    )}
                   </div>
                 </div>
 

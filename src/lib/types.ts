@@ -14,7 +14,6 @@ export interface Task {
   title: string;
   description: string | null;
   status: 'todo' | 'in-progress' | 'done';
-  priority: 'low' | 'medium' | 'high';
   due_date: string | null;
   author_id: string;
   model?: 'Gemini Flash' | 'Gemini Pro' | 'Deepseek V3.2';
