@@ -73,14 +73,14 @@ export function TaskDetail({ task, onClose, onUpdate }: TaskDetailProps) {
   const renderSmartActionButton = () => {
     const status = task.execution_status || 'idle';
     
-    if (status === 'running') {
+    if (status === 'running' || status === 'queued') {
       return (
         <button 
           disabled
           className="px-6 py-2 rounded-full text-[11px] font-bold uppercase tracking-widest bg-zinc-800 text-emerald-400 border border-emerald-500/30 flex items-center gap-2 animate-pulse"
         >
           <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
-          Processing...
+          {status === 'queued' ? 'Queued...' : 'Processing...'}
         </button>
       );
     }
