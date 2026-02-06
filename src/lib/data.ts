@@ -38,7 +38,14 @@ export async function getTasks(projectId?: string) {
   return { data: data as Task[], error }
 }
 
-export async function createTask(projectId: string, title: string, description: string = '') {
+export async function createTask(
+  projectId: string, 
+  title: string, 
+  description: string = '', 
+  model?: Task['model'],
+  trigger_type?: Task['trigger_type'],
+  scheduled_at?: Task['scheduled_at']
+) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Not authenticated')
 
@@ -48,11 +55,38 @@ export async function createTask(projectId: string, title: string, description: 
       project_id: projectId, 
       title, 
       description, 
-      author_id: user.id 
+      author_id: user.id,
+      model,
+      trigger_type,
+      scheduled_at
     }])
     .select()
     .single()
   return { data: data as Task, error }
+}
+
+export async function updateTask(
+  taskId: string, 
+  updates: Partial<Task>
+) {
+  const { data, error } = await supabase
+    .from('tasks')
+    .update(updates)
+    .eq('id', taskId)
+    .select()
+    .single()
+  return { data: data as Task, error }
+}
+
+export async function updateTaskIntelligence(
+  taskId: string, 
+  updates: {
+    execution_status?: Task['execution_status'],
+    suggestions?: Task['suggestions'],
+    evidence_box?: Task['evidence_box']
+  }
+) {
+  return updateTask(taskId, updates)
 }
 
 export async function updateTaskStatus(taskId: string, status: Task['status']) {

@@ -101,11 +101,29 @@ export function TaskList({
 
                 {/* Status Indicator */}
                 <div className="flex flex-col items-end gap-1">
-                  {task.status === 'in-progress' && (
-                     <span className="px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 text-[9px] font-bold uppercase tracking-tighter border border-indigo-500/20">
-                       Active
-                     </span>
+                  {task.execution_status === 'running' && (
+                    <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                      <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                      <span className="text-[9px] font-bold text-emerald-500 uppercase tracking-tighter">Running</span>
+                    </div>
                   )}
+                  {task.execution_status === 'question' && (
+                    <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20">
+                      <span className="text-[9px] font-bold text-amber-500 uppercase tracking-tighter">Question ?</span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2">
+                    {task.model && (
+                      <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-tighter">
+                        {task.model.split(' ')[0]}
+                      </span>
+                    )}
+                    {task.status === 'in-progress' && (
+                      <span className="px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 text-[9px] font-bold uppercase tracking-tighter border border-indigo-500/20">
+                        Active
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

@@ -17,6 +17,12 @@ export interface Task {
   priority: 'low' | 'medium' | 'high';
   due_date: string | null;
   author_id: string;
+  model?: 'Gemini Flash' | 'Gemini Pro' | 'Deepseek V3.2';
+  trigger_type?: 'manual' | 'scheduled' | 'auto';
+  scheduled_at?: string | null;
+  execution_status?: 'idle' | 'queued' | 'running' | 'failed' | 'success' | 'question';
+  suggestions?: string | null;
+  evidence_box?: string | null;
 }
 
 export interface TaskActivity {
