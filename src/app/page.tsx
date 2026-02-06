@@ -139,7 +139,7 @@ export default function Home() {
           <div className="flex flex-col items-center mb-8">
              <div className="text-5xl mb-4 grayscale hover:grayscale-0 transition-all cursor-default">🦾</div>
              <h1 className="text-2xl font-bold tracking-tight">AdamOS</h1>
-             <p className="text-zinc-500 text-xs font-medium uppercase tracking-[0.2em] mt-1">Command Center</p>
+             <p className="text-zinc-500 text-[9px] font-bold uppercase tracking-[0.3em] mt-2">AdamOS Command Center v1.1</p>
           </div>
           
           <div className="space-y-2">
