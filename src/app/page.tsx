@@ -4,18 +4,22 @@ import { useState, useEffect } from "react";
 import { Sidebar } from "@/components/Sidebar";
 import { TaskList } from "@/components/TaskList";
 import { TaskDetail } from "@/components/TaskDetail";
-import { MOCK_TASKS } from '@/lib/mock-data';
+import { Task } from '@/lib/mock-data';
 
 export default function Home() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isClient, setIsClient] = useState(false);
   const [password, setPassword] = useState("");
   const [activeProject, setActiveProject] = useState('p1');
-  const [activeTask, setActiveTask] = useState<any>(null);
+  const [activeTask, setActiveTask] = useState<Task | null>(null);
 
-  // Auth Logic (Simple)
+  // Fix hydration mismatch + setState in effect warning
   useEffect(() => {
+    setIsClient(true);
     const auth = localStorage.getItem("cc_auth");
-    if (auth === "hesloheslo123") setIsAuthenticated(true);
+    if (auth === "hesloheslo123") {
+      setIsAuthenticated(true);
+    }
   }, []);
 
   const handleLogin = (e: React.FormEvent) => {
@@ -27,6 +31,9 @@ export default function Home() {
       alert("Nesprávne heslo.");
     }
   };
+
+  // Prevent flash of content or hydration mismatch
+  if (!isClient) return null;
 
   if (!isAuthenticated) {
     return (

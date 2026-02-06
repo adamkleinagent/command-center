@@ -1,11 +1,28 @@
-// Mock dáta pre prototyp
-export const MOCK_PROJECTS = [
+export interface Project {
+  id: string;
+  name: string;
+  status: string;
+  color: string;
+}
+
+export interface Task {
+  id: string;
+  title: string;
+  project: string;
+  status: string;
+  assignee: 'agent' | 'user';
+  model?: string | null;
+  priority: string;
+  date: string;
+}
+
+export const MOCK_PROJECTS: Project[] = [
   { id: 'p1', name: 'OpenClaw Integration', status: 'active', color: 'bg-emerald-500' },
   { id: 'p2', name: 'Personal Finance', status: 'planning', color: 'bg-blue-500' },
   { id: 'p3', name: 'Smart Home Setup', status: 'paused', color: 'bg-zinc-500' },
 ];
 
-export const MOCK_TASKS = [
+export const MOCK_TASKS: Task[] = [
   { 
     id: 't1', 
     title: 'Configure LLM Fallback', 

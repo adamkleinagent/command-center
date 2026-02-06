@@ -1,6 +1,12 @@
 import React, { useState } from 'react';
+import { Task } from '@/lib/mock-data';
 
-export function TaskDetail({ task, onClose }: any) {
+interface TaskDetailProps {
+  task: Task | null;
+  onClose: () => void;
+}
+
+export function TaskDetail({ task, onClose }: TaskDetailProps) {
   const [activeTab, setActiveTab] = useState('chat'); // chat | docs | config
 
   if (!task) {

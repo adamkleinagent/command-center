@@ -1,7 +1,12 @@
 import React from 'react';
-import { MOCK_TASKS } from '@/lib/mock-data';
+import { MOCK_TASKS, Task } from '@/lib/mock-data';
 
-export function TaskList({ onSelectTask, activeTask }: any) {
+interface TaskListProps {
+  activeTask: Task | null;
+  onSelectTask: (task: Task) => void;
+}
+
+export function TaskList({ onSelectTask, activeTask }: TaskListProps) {
   return (
     <div className="flex-1 h-screen bg-zinc-950 flex flex-col">
       {/* Header */}

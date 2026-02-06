@@ -1,7 +1,12 @@
 import React from 'react';
 import { MOCK_PROJECTS } from '@/lib/mock-data';
 
-export function Sidebar({ activeProject, onSelectProject }: any) {
+interface SidebarProps {
+  activeProject: string;
+  onSelectProject: (id: string) => void;
+}
+
+export function Sidebar({ activeProject, onSelectProject }: SidebarProps) {
   return (
     <div className="w-64 h-screen bg-zinc-900 border-r border-zinc-800 flex flex-col text-zinc-400">
       {/* User Profile */}
