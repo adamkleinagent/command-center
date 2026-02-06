@@ -49,6 +49,27 @@ export function TaskDetail({ task, onClose, onUpdate }: TaskDetailProps) {
     await handleUpdateTask({ execution_status: 'queued' });
   };
 
+  const renderStatusSelector = () => {
+    const statuses: Array<Task['status']> = ['todo', 'in-progress', 'done'];
+    return (
+      <div className="flex p-1 bg-zinc-900 rounded-lg border border-zinc-800">
+        {statuses.map((s) => (
+          <button
+            key={s}
+            onClick={() => handleUpdateTask({ status: s })}
+            className={`flex-1 px-3 py-1 text-[10px] font-bold uppercase tracking-tighter rounded-md transition-all ${
+              task.status === s 
+                ? 'bg-zinc-700 text-white shadow-sm' 
+                : 'text-zinc-500 hover:text-zinc-300'
+            }`}
+          >
+            {s.replace('-', ' ')}
+          </button>
+        ))}
+      </div>
+    );
+  };
+
   const renderSmartActionButton = () => {
     const status = task.execution_status || 'idle';
     
@@ -64,65 +85,46 @@ export function TaskDetail({ task, onClose, onUpdate }: TaskDetailProps) {
       );
     }
 
-    if (status === 'idle' || status === 'failed') {
-      return (
-        <button 
-          onClick={handleRunTask}
-          className="px-6 py-2 rounded-full text-[11px] font-bold uppercase tracking-widest bg-emerald-600 border border-emerald-500 text-white hover:bg-emerald-500 transition-all shadow-lg shadow-emerald-900/20 active:scale-95"
-        >
-          Run Task
-        </button>
-      );
-    }
-
-    if (task.status === 'done') {
-      return (
-        <button 
-          onClick={toggleStatus}
-          className="px-6 py-2 rounded-full text-[11px] font-bold uppercase tracking-widest bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-zinc-200 hover:border-zinc-700 transition-all active:scale-95"
-        >
-          Reopen Task
-        </button>
-      );
-    }
-
-    // Default: Mark as Done (for success or todo)
     return (
       <button 
-        onClick={toggleStatus}
-        className="px-6 py-2 rounded-full text-[11px] font-bold uppercase tracking-widest bg-indigo-600 border border-indigo-500 text-white hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-900/20 active:scale-95"
+        onClick={handleRunTask}
+        className="px-6 py-2 rounded-full text-[11px] font-bold uppercase tracking-widest bg-emerald-600 border border-emerald-500 text-white hover:bg-emerald-500 transition-all shadow-lg shadow-emerald-900/20 active:scale-95"
       >
-        Mark as Done
+        Run Task
       </button>
     );
   };
 
   return (
-    <div className="w-[450px] h-screen bg-black flex flex-col shadow-2xl border-l border-zinc-900 animate-in slide-in-from-right duration-500 ease-out">
+    <div className="w-full md:w-[450px] lg:w-[550px] h-screen bg-black flex flex-col shadow-2xl border-l border-zinc-900 md:border md:border-zinc-800 md:rounded-l-2xl md:my-4 md:h-[calc(100vh-2rem)] animate-in slide-in-from-right duration-500 ease-out z-50">
       {/* Header */}
       <div className="p-8 border-b border-zinc-900/50">
-        <div className="flex justify-between items-center mb-8">
-          <div className="flex-1">
-             {renderSmartActionButton()}
-          </div>
-          
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-zinc-900/50 border border-zinc-800/50 group transition-all hover:border-zinc-700">
-               <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-tighter">Model:</span>
-               <select 
-                value={task.model || ''} 
-                onChange={(e) => handleUpdateTask({ model: e.target.value as any })}
-                className="bg-transparent text-zinc-300 text-[10px] font-medium outline-none cursor-pointer"
-              >
-                <option value="" disabled>Auto</option>
-                <option value="Gemini Flash">Flash</option>
-                <option value="Gemini Pro">Pro</option>
-                <option value="Deepseek V3.2">DS V3</option>
-              </select>
+        <div className="flex flex-col gap-6 mb-8">
+          <div className="flex justify-between items-center">
+            <div className="flex-1">
+               {renderSmartActionButton()}
             </div>
             
-            <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-full bg-zinc-900/50 text-zinc-600 hover:text-white hover:bg-zinc-800 transition-all text-sm border border-zinc-800/50">✕</button>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-zinc-900/50 border border-zinc-800/50 group transition-all hover:border-zinc-700">
+                 <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-tighter">Model:</span>
+                 <select 
+                  value={task.model || ''} 
+                  onChange={(e) => handleUpdateTask({ model: e.target.value as any })}
+                  className="bg-transparent text-zinc-300 text-[10px] font-medium outline-none cursor-pointer"
+                >
+                  <option value="" disabled>Auto</option>
+                  <option value="Gemini Flash">Flash</option>
+                  <option value="Gemini Pro">Pro</option>
+                  <option value="Deepseek V3.2">DS V3</option>
+                </select>
+              </div>
+              
+              <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-full bg-zinc-900/50 text-zinc-600 hover:text-white hover:bg-zinc-800 transition-all text-sm border border-zinc-800/50">✕</button>
+            </div>
           </div>
+          
+          {renderStatusSelector()}
         </div>
 
         <h2 className="text-2xl font-bold text-white tracking-tight leading-tight">{task.title}</h2>
@@ -130,7 +132,7 @@ export function TaskDetail({ task, onClose, onUpdate }: TaskDetailProps) {
         <div className="flex items-center gap-6 mt-6">
            <div className="flex items-center gap-2">
               <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-wider">Created</span>
-              <span className="text-[10px] text-zinc-300 font-medium">
+              <span className="text-[10px] text-zinc-400 font-medium tabular-nums">
                 {new Date(task.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
               </span>
            </div>
@@ -140,7 +142,7 @@ export function TaskDetail({ task, onClose, onUpdate }: TaskDetailProps) {
               <select 
                 value={task.trigger_type || 'manual'} 
                 onChange={(e) => handleUpdateTask({ trigger_type: e.target.value as any })}
-                className="bg-transparent text-zinc-300 text-[10px] font-medium outline-none cursor-pointer"
+                className="bg-transparent text-zinc-400 font-bold uppercase tracking-tighter text-[10px] outline-none cursor-pointer"
               >
                 <option value="manual">Manual</option>
                 <option value="scheduled">Scheduled</option>
@@ -254,9 +256,9 @@ export function TaskDetail({ task, onClose, onUpdate }: TaskDetailProps) {
             )}
 
             {!task.suggestions && !task.evidence_box && (
-              <div className="flex flex-col items-center justify-center py-20 opacity-20">
-                <div className="text-2xl mb-4">🧠</div>
-                <p className="text-[10px] uppercase tracking-[0.3em]">No intelligence data</p>
+              <div className="flex flex-col items-center justify-center py-20 opacity-40">
+                <div className="text-2xl mb-4 animate-pulse">🧠</div>
+                <p className="text-[10px] uppercase tracking-[0.3em] font-bold text-zinc-400">Waiting for Adam's input...</p>
               </div>
             )}
 

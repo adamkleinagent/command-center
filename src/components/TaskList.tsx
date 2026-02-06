@@ -58,12 +58,17 @@ export function TaskList({
             <div 
               key={task.id}
               onClick={() => onSelectTask(task)}
-              className={`group mx-4 p-4 rounded-xl border transition-all duration-200 ${
+              className={`group mx-4 p-4 rounded-xl border transition-all duration-200 relative overflow-hidden ${
                 activeTask?.id === task.id 
                   ? 'bg-zinc-900 border-zinc-700 shadow-xl' 
                   : 'bg-transparent border-transparent hover:bg-zinc-900/40 hover:border-zinc-800'
               }`}
             >
+              {/* Priority Indicator - Subtle 2px color bar */}
+              <div className={`absolute left-0 top-0 bottom-0 w-[2px] ${
+                task.status === 'done' ? 'bg-zinc-800' : 'bg-indigo-500'
+              }`} />
+
               <div className="flex items-start gap-4">
                 {/* Simple Apple-style Status Circle */}
                 <div className={`mt-1 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${
@@ -90,7 +95,7 @@ export function TaskList({
                         {projects.find(p => p.id === task.project_id)?.name}
                       </span>
                     )}
-                    <span className="text-[10px] font-medium text-zinc-600">
+                    <span className="text-[10px] font-medium text-zinc-400 tabular-nums">
                       {new Date(task.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                     </span>
                   </div>
@@ -111,7 +116,7 @@ export function TaskList({
                   )}
                   <div className="flex items-center gap-2">
                     {task.model && (
-                      <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-tighter">
+                      <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-tighter">
                         {task.model.split(' ')[0]}
                       </span>
                     )}
