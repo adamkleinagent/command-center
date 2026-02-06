@@ -8,6 +8,7 @@ import { TaskDetail } from "@/components/TaskDetail";
 import { Project, Task } from '@/lib/types';
 import { signIn, getSession } from "@/lib/auth";
 import { getProjects, getTasks } from "@/lib/data";
+import { supabase } from "@/lib/supabase";
 
 export default function Home() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -45,6 +46,47 @@ export default function Home() {
       loadTasks();
     }
   }, [activeProjectId, isAuthenticated]);
+
+  // Realtime Subscriptions
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    console.log('Setting up Realtime subscriptions...');
+
+    const projectsChannel = supabase
+      .channel('projects_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'projects' }, () => {
+        loadInitialData();
+      })
+      .subscribe();
+
+    const tasksChannel = supabase
+      .channel('tasks_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, () => {
+        loadTasks();
+      })
+      .subscribe();
+
+    const activityChannel = supabase
+      .channel('activity_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'task_activity' }, (payload) => {
+        // We trigger a task update if the activity belongs to the current task
+        // This is a bit of a shortcut, but it ensures UI refresh
+        if (activeTask && (payload.new as any).task_id === activeTask.id) {
+          // You might want to refresh activity specifically, 
+          // but usually the Detail view handles its own activity fetching or we can re-set activeTask
+          loadTasks(); 
+        }
+      })
+      .subscribe();
+
+    return () => {
+      console.log('Cleaning up Realtime subscriptions...');
+      supabase.removeChannel(projectsChannel);
+      supabase.removeChannel(tasksChannel);
+      supabase.removeChannel(activityChannel);
+    };
+  }, [isAuthenticated, activeProjectId, activeTask?.id]);
 
   const loadInitialData = async () => {
     const { data } = await getProjects();
