@@ -26,17 +26,17 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v4
       - name: Install dependencies
-        run: npm ci
-        working-directory: ./command-center
+        run: npm install
+        working-directory: command-center
       - name: Build with Next.js
         run: npm run build
-        working-directory: ./command-center
+        working-directory: command-center
       - name: Disable Jekyll
-        run: touch ./command-center/out/.nojekyll
+        run: touch command-center/out/.nojekyll
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./command-center/out
+          path: command-center/out
 
   deploy:
     environment:
