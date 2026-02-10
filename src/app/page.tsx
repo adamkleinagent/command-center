@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Sidebar } from "@/components/Sidebar";
 import { TaskList } from "@/components/TaskList";
 import { TaskDetail } from "@/components/TaskDetail";
+import { MobileNav } from "@/components/MobileNav";
 import { Project, Task } from '@/lib/types';
 import { signIn, getSession } from "@/lib/auth";
 import { getProjects, getTasks } from "@/lib/data";
@@ -23,6 +24,10 @@ export default function Home() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [activeProjectId, setActiveProjectId] = useState('all');
   const [activeTask, setActiveTask] = useState<Task | null>(null);
+  
+  // Mobile state
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'tasks' | 'dashboard'>('tasks');
 
   // Fix hydration mismatch + auth check
   useEffect(() => {
@@ -51,8 +56,6 @@ export default function Home() {
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    console.log('Setting up Realtime subscriptions...');
-
     const projectsChannel = supabase
       .channel('projects_changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'projects' }, () => {
@@ -70,23 +73,29 @@ export default function Home() {
     const activityChannel = supabase
       .channel('activity_changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'task_activity' }, (payload) => {
-        // We trigger a task update if the activity belongs to the current task
-        // This is a bit of a shortcut, but it ensures UI refresh
         if (activeTask && (payload.new as any).task_id === activeTask.id) {
-          // You might want to refresh activity specifically, 
-          // but usually the Detail view handles its own activity fetching or we can re-set activeTask
           loadTasks(); 
         }
       })
       .subscribe();
 
     return () => {
-      console.log('Cleaning up Realtime subscriptions...');
       supabase.removeChannel(projectsChannel);
       supabase.removeChannel(tasksChannel);
       supabase.removeChannel(activityChannel);
     };
   }, [isAuthenticated, activeProjectId, activeTask?.id]);
+
+  // Close sidebar when selecting project on mobile
+  const handleSelectProject = (id: string) => {
+    setActiveProjectId(id);
+    setSidebarOpen(false);
+  };
+
+  // Close detail when clicking task on mobile
+  const handleSelectTask = (task: Task) => {
+    setActiveTask(task);
+  };
 
   const loadInitialData = async () => {
     const { data } = await getProjects();
@@ -117,6 +126,7 @@ export default function Home() {
   const handleProjectCreated = (project: Project) => {
     setProjects([project, ...projects]);
     setActiveProjectId(project.id);
+    setSidebarOpen(false);
   };
 
   const handleTaskCreated = (task: Task) => {
@@ -138,8 +148,8 @@ export default function Home() {
         <form onSubmit={handleLogin} className="flex flex-col gap-4 p-8 border border-zinc-900 rounded-2xl w-full max-w-sm bg-zinc-950 shadow-2xl">
           <div className="flex flex-col items-center mb-8">
              <div className="text-5xl mb-4 grayscale hover:grayscale-0 transition-all cursor-default">🦾</div>
-             <h1 className="text-2xl font-bold tracking-tight">AdamOS</h1>
-             <p className="text-zinc-500 text-[9px] font-bold uppercase tracking-[0.3em] mt-2">AdamOS Command Center v1.1</p>
+             <h1 className="text-2xl font-bold tracking-tight">Command Center</h1>
+             <p className="text-zinc-500 text-[9px] font-bold uppercase tracking-[0.3em] mt-2">AI Task Management</p>
           </div>
           
           <div className="space-y-2">
@@ -171,43 +181,75 @@ export default function Home() {
           </button>
 
           <Link href="/signup" className="text-[10px] font-bold uppercase tracking-widest text-zinc-600 hover:text-zinc-400 transition-colors text-center mt-4">
-            Create new partner account
+            Create new account
           </Link>
         </form>
       </div>
     );
   }
 
-  // Main Layout - Apple Pro Style
+  // Main Layout - Responsive
   return (
     <div className="flex h-screen bg-black font-sans text-zinc-100 overflow-hidden selection:bg-indigo-500/30">
-      {/* 1. Sidebar (Navigation) */}
-      <Sidebar 
-        projects={projects}
-        activeProject={activeProjectId} 
-        onSelectProject={setActiveProjectId}
-        onProjectCreated={handleProjectCreated}
-        userEmail={user?.email}
+      {/* Mobile Navigation */}
+      <MobileNav 
+        isOpen={sidebarOpen}
+        onToggle={() => setSidebarOpen(!sidebarOpen)}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        projectName={activeProjectId === 'all' ? 'All Tasks' : projects.find(p => p.id === activeProjectId)?.name || 'Tasks'}
       />
 
-      {/* 2. Task List (Workboard) */}
-      <TaskList 
-        tasks={tasks}
-        projects={projects}
-        activeProjectId={activeProjectId}
-        activeTask={activeTask}
-        onSelectTask={setActiveTask}
-        onTaskCreated={handleTaskCreated}
-      />
+      {/* Sidebar - Hidden on mobile unless open */}
+      <div className={`
+        fixed inset-y-0 left-0 z-40 transform transition-transform duration-300 ease-in-out
+        md:relative md:translate-x-0
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+      `}>
+        <Sidebar 
+          projects={projects}
+          activeProject={activeProjectId} 
+          onSelectProject={handleSelectProject}
+          onProjectCreated={handleProjectCreated}
+          userEmail={user?.email}
+          onClose={() => setSidebarOpen(false)}
+        />
+      </div>
 
-      {/* 3. Detail Panel (Context) */}
-      {activeTask && (
-        <TaskDetail 
-          task={activeTask} 
-          onClose={() => setActiveTask(null)}
-          onUpdate={handleTaskUpdated}
+      {/* Backdrop for mobile sidebar */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/60 z-30 md:hidden"
+          onClick={() => setSidebarOpen(false)}
         />
       )}
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col md:flex-row pt-14 md:pt-0">
+        {/* Task List */}
+        <TaskList 
+          tasks={tasks}
+          projects={projects}
+          activeProjectId={activeProjectId}
+          activeTask={activeTask}
+          onSelectTask={handleSelectTask}
+          onTaskCreated={handleTaskCreated}
+        />
+
+        {/* Detail Panel - Full screen on mobile when active */}
+        {activeTask && (
+          <div className={`
+            fixed inset-0 z-50 md:relative md:inset-auto
+            md:w-[450px] lg:w-[550px]
+          `}>
+            <TaskDetail 
+              task={activeTask} 
+              onClose={() => setActiveTask(null)}
+              onUpdate={handleTaskUpdated}
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 }
